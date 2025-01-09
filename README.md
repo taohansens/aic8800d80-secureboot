@@ -51,14 +51,14 @@ make
 sudo make install
 ```
 
-#### Load the Driver
+### Load the Driver
 After installation, load the driver with the following command:
 
 ```bash
 sudo modprobe aic8800_fdrv
 ```
 
-#### Verify the Module is Active
+### Verify the Module is Active
 Check if the module is loaded correctly:
 
 ```bash
@@ -73,7 +73,7 @@ aic_load_fw     69632   1   aic8800_fdrv
 usbcore         348160  10  xhci_hcd,ehci_pci,usbhid,usb_storage,ehci_hcd,xhci_pci,uas,aic_load_fw,uhci_hcd,aic8800_fdrv
 ```
 
-#### Verify Wi-Fi Device is Active
+### Verify Wi-Fi Device is Active
 To check if the Wi-Fi interface is recognized, run:
 
 ```bash
