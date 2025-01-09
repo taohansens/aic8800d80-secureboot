@@ -73,6 +73,8 @@ aic_load_fw     69632   1   aic8800_fdrv
 usbcore         348160  10  xhci_hcd,ehci_pci,usbhid,usb_storage,ehci_hcd,xhci_pci,uas,aic_load_fw,uhci_hcd,aic8800_fdrv
 ```
 
+After that, plug in your USB wireless network card.
+
 ### Verify Wi-Fi Device is Active
 To check if the Wi-Fi interface is recognized, run:
 
