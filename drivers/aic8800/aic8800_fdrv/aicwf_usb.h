@@ -16,7 +16,7 @@
 
 /* USB Device ID */
 #define USB_VENDOR_ID_AIC                0xA69C
-#define USB_VENDOR_ID_AIC_V2            0x368B
+#define USB_VENDOR_ID_AIC_V2             0x368B
 #define USB_VENDOR_ID_TP                 0x2357
 #define USB_VENDOR_ID_TENDA              0x2604
 
