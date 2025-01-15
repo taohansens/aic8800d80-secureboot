@@ -1,7 +1,7 @@
 # AIC8800D80 Linux Driver
 This driver is for the AIC8800D80 chipset, supported by devices such as the Tenda U11.
 
-Added support for devices with Vendor ID 368B (untested).
+Added support for devices with Vendor ID 368B (tested).
 
 Tested on Linux kernel 6.13-rc1 with Ubuntu and 6.1.0.27 with Debian 12.
 
