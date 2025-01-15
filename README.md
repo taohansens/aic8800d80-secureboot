@@ -1,9 +1,11 @@
 # AIC8800D80 Linux Driver
-This driver is for the AIC8800D80 chipset, supported by devices such as the Tenda U11.
+This driver is for the AIC8800D80 chipset, supported by devices such as the Tenda U11 and AX913B.
 
 Added support for devices with Vendor ID 368B (tested).
 
 Tested on Linux kernel 6.13-rc1 with Ubuntu and 6.1.0.27 with Debian 12.
+
+Bluetooth not working.
 
 ### Attention
 Before installing the driver, delete all aic8800-related folders under /lib/firmware. Using an incorrect firmware version may cause the system to freeze.
