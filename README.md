@@ -7,6 +7,9 @@ Tested on Linux kernel 6.14 with Ubuntu 25.04 and 6.1.0.27 with Debian 12.
 
 Bluetooth not working.
 
+### Disclaimer
+I did not develop this software, The code is sourced from the Tenda U11 driver. I only made some modifications to the code to adapt it to newer kernel versions. Apart from compilation issues, I am unable to address other problems."
+
 ### Attention
 Before installing the driver, delete all aic8800-related folders under /lib/firmware. Using an incorrect firmware version may cause the system to freeze.
 
