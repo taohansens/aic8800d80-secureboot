@@ -2483,7 +2483,7 @@ static void aicwf_usb_disconnect(struct usb_interface *intf)
 #if 0
 	if(timer_pending(&usb_dev->rwnx_hw->p2p_alive_timer) && usb_dev->rwnx_hw->is_p2p_alive == 1){
 		printk("%s del timer rwnx_hw->p2p_alive_timer \r\n", __func__);
-		rwnx_timer_delete(&usb_dev->rwnx_hw->p2p_alive_timer);
+		rwnx_del_timer(&usb_dev->rwnx_hw->p2p_alive_timer);
 	}
 #endif
     aicwf_bus_deinit(usb_dev->dev);
