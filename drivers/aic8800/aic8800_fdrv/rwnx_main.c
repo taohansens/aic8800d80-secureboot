@@ -2191,7 +2191,7 @@ static int rwnx_cfg80211_del_iface(struct wiphy *wiphy, struct wireless_dev *wde
 #if 0
 	if (rwnx_vif == rwnx_hw->p2p_dev_vif) {
 		if (timer_pending(&rwnx_hw->p2p_alive_timer)) {
-			del_timer_sync(&rwnx_hw->p2p_alive_timer);
+			timer_delete_sync(&rwnx_hw->p2p_alive_timer);
 		}
 	}
 #endif
@@ -2440,7 +2440,7 @@ static void rwnx_cfgp2p_stop_p2p_device(struct wiphy *wiphy, struct wireless_dev
 	if (rwnx_vif == rwnx_hw->p2p_dev_vif) {
 		rwnx_hw->is_p2p_alive = 0;
 		if (timer_pending(&rwnx_hw->p2p_alive_timer)) {
-			del_timer_sync(&rwnx_hw->p2p_alive_timer);
+			timer_delete_sync(&rwnx_hw->p2p_alive_timer);
 		}
 		if (rwnx_vif->up) {
 			rwnx_send_remove_if(rwnx_hw, rwnx_vif->vif_index, true);
