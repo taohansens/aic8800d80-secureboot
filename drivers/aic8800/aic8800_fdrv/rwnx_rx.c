@@ -1428,7 +1428,11 @@ int reord_flush_tid(struct aicwf_rx_priv *rx_priv, struct sk_buff *skb, u8 tid)
     preorder_ctrl->enable = false;
     spin_unlock_irqrestore(&preorder_ctrl->reord_list_lock, flags);
     if (timer_pending(&preorder_ctrl->reord_timer))
-        ret = timer_delete_sync(&preorder_ctrl->reord_timer);
+        #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+            ret = timer_delete_sync(&preorder_ctrl->reord_timer);
+        #else
+            ret = del_timer_sync(&preorder_ctrl->reord_timer);
+        #endif
     cancel_work_sync(&preorder_ctrl->reord_timer_work);
 
     return 0;
@@ -1454,7 +1458,11 @@ void reord_deinit_sta(struct aicwf_rx_priv* rx_priv, struct reord_ctrl_info *reo
 		if(preorder_ctrl->enable){
 			preorder_ctrl->enable = false;
 	        if (timer_pending(&preorder_ctrl->reord_timer)) {
-	            ret = timer_delete_sync(&preorder_ctrl->reord_timer);
+	            #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+                    ret = timer_delete_sync(&preorder_ctrl->reord_timer);
+                #else
+                    ret = del_timer_sync(&preorder_ctrl->reord_timer);
+                #endif
 	        }
 	        cancel_work_sync(&preorder_ctrl->reord_timer_work);
 		}
@@ -1833,7 +1841,11 @@ int reord_process_unit(struct aicwf_rx_priv *rx_priv, struct sk_buff *skb, u16 s
         }
     } else {
 		if(timer_pending(&preorder_ctrl->reord_timer)) {
-	        	ret = timer_delete(&preorder_ctrl->reord_timer);
+	        	#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+                    ret = timer_delete(&preorder_ctrl->reord_timer);
+                #else
+                    ret = del_timer(&preorder_ctrl->reord_timer);
+                #endif
 		}
     }
 
