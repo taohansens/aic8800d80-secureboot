@@ -527,12 +527,7 @@ static void aicwf_sdio_bus_stop(struct device *dev)
 
     aicwf_sdio_pwrctl_timer(sdiodev, 0);
     if(timer_pending(&sdiodev->rwnx_hw->p2p_alive_timer)){
-        #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
-            ret = timer_delete(&sdiodev->rwnx_hw->p2p_alive_timer);
-        #else
-            ret = del_timer(&sdiodev->rwnx_hw->p2p_alive_timer);
-        #endif
-    }
+        ret = del_timer(&sdiodev->rwnx_hw->p2p_alive_timer);}
     sdio_dbg("%s\n",__func__);
     if (sdiodev->pwrctl_tsk) {
         complete(&sdiodev->pwrctrl_trgg);
@@ -1085,11 +1080,7 @@ void aicwf_sdio_pwrctl_timer(struct aic_sdio_dev *sdiodev, uint duration)
     spin_lock_bh(&sdiodev->pwrctl_lock);
     if (!duration) {
         if (timer_pending(&sdiodev->timer))
-            #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
-                timer_delete_sync(&sdiodev->timer);
-            #else
-                del_timer_sync(&sdiodev->timer);
-            #endif
+            del_timer_sync(&sdiodev->timer);
     } else {
         sdiodev->active_duration = duration;
         timeout = msecs_to_jiffies(sdiodev->active_duration);

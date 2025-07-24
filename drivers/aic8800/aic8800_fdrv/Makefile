@@ -82,6 +82,7 @@ CONFIG_BR_SUPPORT = n
 CONFIG_USB_MSG_OUT_EP = y
 CONFIG_USB_MSG_IN_EP = y
 CONFIG_USB_RX_REASSEMBLE = n
+CONFIG_WOWLAN = n
 
 #DCDW support tx aggr, D80 support both
 CONFIG_USB_RX_AGGR = n
@@ -109,16 +110,30 @@ CONFIG_PREALLOC_TXQ ?= y
 CONFIG_USE_WIRELESS_EXT = y
 CONFIG_DPD = y
 CONFIG_FORCE_DPD_CALIB = y
+CONFIG_LOFT_CALIB = n
 CONFIG_GKI = n
 CONFIG_SCHED_SCAN = n
 CONFIG_TEMP_COMP = n
 CONFIG_POWER_LIMIT = n
+CONFIG_EXT_FEM_8800DCDW = n
 # CONFIG_MCC = n for sta and p2p concurrent in same channel.
 CONFIG_MCC = y
 CONFIG_LOAD_BT_PATCH_IN_FDRV = n
+CONFIG_DYNAMIC_PWR = n
+CONFIG_DYNAMIC_PERPWR = n
+CONFIG_BAND_STEERING = n
+
+#support D80X2 can write rf result to file
+CONFIG_WRITE_FILE_D80X2 = n
 
 ifneq ($(CONFIG_WIRELESS_EXT), y)
 CONFIG_USE_WIRELESS_EXT = n
+endif
+
+ifeq ($(CONFIG_EXT_FEM_8800DCDW), y)
+CONFIG_DPD = n
+CONFIG_FORCE_DPD_CALIB = n
+CONFIG_LOFT_CALIB = y
 endif
 
 # Support of MU-MIMO transmission (need FW support)
@@ -148,6 +163,7 @@ BR_NAME = br0
 
 obj-$(CONFIG_AIC8800_WLAN_SUPPORT) := $(MODULE_NAME).o
 $(MODULE_NAME)-y := \
+    rwnx_wakelock.o        \
 	rwnx_msg_tx.o          \
 	rwnx_msg_rx.o          \
 	rwnx_utils.o           \
@@ -172,8 +188,11 @@ $(MODULE_NAME)-y := \
 	aic_vendor.o           \
         aic_priv_cmd.o         \
 	aicwf_compat_8800dc.o  \
-	aicwf_compat_8800d80.o
+	aicwf_compat_8800d80.o \
+	aicwf_compat_8800d80x2.o
 
+$(MODULE_NAME)-$(CONFIG_BAND_STEERING)    += aicwf_manager.o    \
+	aicwf_steering.o
 $(MODULE_NAME)-$(CONFIG_BR_SUPPORT)       += aic_br_ext.o
 $(MODULE_NAME)-$(CONFIG_RWNX_RADAR)       += rwnx_radar.o
 $(MODULE_NAME)-$(CONFIG_DEBUG_FS)         += rwnx_debugfs.o
@@ -241,6 +260,10 @@ ccflags-$(CONFIG_RWNX_MUMIMO_TX) += -DCONFIG_RWNX_MUMIMO_TX
 ccflags-$(CONFIG_RFTEST) += -DCONFIG_RFTEST
 ccflags-$(CONFIG_MCC) += -DCONFIG_MCC
 ccflags-$(CONFIG_LOAD_BT_PATCH_IN_FDRV) += -DCONFIG_LOAD_BT_PATCH_IN_FDRV
+ccflags-$(CONFIG_DYNAMIC_PWR) += -DCONFIG_DYNAMIC_PWR
+ccflags-$(CONFIG_DYNAMIC_PERPWR) += -DCONFIG_DYNAMIC_PERPWR
+ccflags-$(CONFIG_BAND_STEERING) += -DCONFIG_BAND_STEERING
+ccflags-$(CONFIG_WRITE_FILE_D80X2) += -DRF_WRITE_FILE
 
 ifeq ($(CONFIG_SDIO_SUPPORT), y)
 ccflags-y += -DAICWF_SDIO_SUPPORT
@@ -274,7 +297,7 @@ endif
 ccflags-$(CONFIG_RX_REORDER) += -DAICWF_RX_REORDER
 ccflags-$(CONFIG_ARP_OFFLOAD) += -DAICWF_ARP_OFFLOAD
 ccflags-$(CONFIG_USE_5G) += -DUSE_5G
-ccflags-$(CONFIG_RADAR_OR_IR_DETECT) += -DRADAR_OR_IR_DETECT
+ccflags-$(CONFIG_RADAR_OR_IR_DETECT) += -DCONFIG_RADAR_OR_IR_DETECT
 ccflags-$(CONFIG_DOWNLOAD_FW)  += -DCONFIG_DOWNLOAD_FW
 ccflags-$(CONFIG_USB_BT)  += -DCONFIG_USB_BT
 ccflags-$(CONFIG_ALIGN_8BYTES)  += -DCONFIG_ALIGN_8BYTES
@@ -310,11 +333,14 @@ ccflags-$(CONFIG_PREALLOC_TXQ) += -DCONFIG_PREALLOC_TXQ
 ccflags-$(CONFIG_USE_WIRELESS_EXT) += -DCONFIG_USE_WIRELESS_EXT
 ccflags-$(CONFIG_DPD) += -DCONFIG_DPD
 ccflags-$(CONFIG_FORCE_DPD_CALIB) += -DCONFIG_FORCE_DPD_CALIB -DCONFIG_DPD
+ccflags-$(CONFIG_LOFT_CALIB) += -DCONFIG_LOFT_CALIB
 ccflags-$(CONFIG_GKI) += -DCONFIG_GKI
 ccflags-$(CONFIG_SCHED_SCAN) += -DCONFIG_SCHED_SCAN
 ccflags-$(CONFIG_FILTER_TCP_ACK) += -DCONFIG_FILTER_TCP_ACK
 ccflags-$(CONFIG_TEMP_COMP) += -DCONFIG_TEMP_COMP
 ccflags-$(CONFIG_POWER_LIMIT) += -DCONFIG_POWER_LIMIT
+ccflags-$(CONFIG_EXT_FEM_8800DCDW) += -DCONFIG_EXT_FEM_8800DCDW
+ccflags-$(CONFIG_WOWLAN) += -DCONFIG_WOWLAN
 MAKEFLAGS +=-j$(shell nproc)
 
 # Platform support list

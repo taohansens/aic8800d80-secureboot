@@ -3,6 +3,9 @@
 #include "reg_access.h"
 
 #define FW_USERCONFIG_NAME_8800D80         "aic_userconfig_8800d80.txt"
+#define FW_USERCONFIG_NAME_8800D80_U11     "aic_userconfig_8800d80_u11.txt"
+#define FW_USERCONFIG_NAME_8800D80_U11_PRO "aic_userconfig_8800d80_u11_pro.txt"
+#define FW_USERCONFIG_NAME_8800D80_U11_CUS "aic_userconfig_8800d80_u11_cus.txt"
 #define FW_POWERLIMIT_NAME_8800D80         "aic_powerlimit_8800d80.txt"
 
 extern char aic_fw_path[200];
@@ -37,6 +40,18 @@ int	rwnx_plat_userconfig_load_8800d80(struct rwnx_hw *rwnx_hw){
     int size;
     u32 *dst=NULL;
     char *filename = FW_USERCONFIG_NAME_8800D80;
+    if (rwnx_hw->usbdev->pid == USB_PRODUCT_ID_TENDA_U11
+        || rwnx_hw->usbdev->pid == USB_PRODUCT_ID_AIC8800M80_CUS1
+        || rwnx_hw->usbdev->pid == USB_PRODUCT_ID_AIC8800M80_CUS4) {
+        filename = FW_USERCONFIG_NAME_8800D80_U11;
+    } else if (rwnx_hw->usbdev->pid == USB_PRODUCT_ID_TENDA_U11_PRO
+        || rwnx_hw->usbdev->pid == USB_PRODUCT_ID_AIC8800M80_CUS3
+        || rwnx_hw->usbdev->pid == USB_PRODUCT_ID_AIC8800M80_CUS5
+        || rwnx_hw->usbdev->pid == USB_PRODUCT_ID_AIC8800M80_CUS6) {
+        filename = FW_USERCONFIG_NAME_8800D80_U11_PRO;
+    } else if (rwnx_hw->usbdev->pid == USB_PRODUCT_ID_AIC8800M80_CUS2) {
+        filename = FW_USERCONFIG_NAME_8800D80_U11_CUS;
+    }
 
 #ifndef ANDROID_PLATFORM
             sprintf(aic_fw_path, "%s/%s", aic_fw_path, "aic8800D80");
@@ -65,7 +80,7 @@ int	rwnx_plat_userconfig_load_8800d80(struct rwnx_hw *rwnx_hw){
 }
 
 #ifdef CONFIG_POWER_LIMIT
-extern char default_ccode[];
+extern char country_code[];
 int rwnx_plat_powerlimit_load_8800d80(struct rwnx_hw *rwnx_hw)
 {
     int size;
@@ -85,7 +100,7 @@ int rwnx_plat_powerlimit_load_8800d80(struct rwnx_hw *rwnx_hw)
     AICWFDBG(LOGINFO, "### Load file done: %s, size=%d\n", filename, size);
 
     /* parsing the file */
-    rwnx_plat_powerlimit_parsing((char *)dst, size, default_ccode);
+    rwnx_plat_powerlimit_parsing((char *)dst, size, country_code);
 
     rwnx_release_firmware_common(&dst);
 

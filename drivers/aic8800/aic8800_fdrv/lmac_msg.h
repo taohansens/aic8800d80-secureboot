@@ -402,6 +402,17 @@ enum mm_msg_tag
     MM_SET_TXPWR_LVL_ADJ_REQ,
     MM_SET_TXPWR_LVL_ADJ_CFM,
 
+	MM_RADAR_DETECT_IND,
+
+	MM_SET_APF_PROG_REQ,
+	MM_SET_APF_PROG_CFM,
+
+	MM_GET_APF_PROG_REQ,
+	MM_GET_APF_PROG_CFM,
+
+	MM_SET_TXPWR_PER_STA_REQ,
+	MM_SET_TXPWR_PER_STA_CFM,
+
     /// MAX number of messages
     MM_MAX,
 };
@@ -1264,6 +1275,17 @@ struct mm_set_rf_config_req
     u32_l data[64];
 };
 
+typedef struct
+{ 
+	u32_l magic_num; /*“GWCR” or ’SWCR”*/
+	u32_l info_flag; 
+	u32_l calib_flag; 
+	u32_l reserved0; 	
+	u32_l res_data[536/sizeof(u32_l)];
+}wf_rf_calib_res_drv_t;
+
+#define DRIVER_GET_WIFI_CALRES_MAGIC_NUM 0x52435747
+#define DRIVER_SET_WIFI_CALRES_MAGIC_NUM 0x52435753
 
 struct mm_set_rf_calib_req
 {
@@ -1277,12 +1299,35 @@ struct mm_set_rf_calib_req
 
 };
 
+struct mm_set_rf_calib_req_v2
+{
+	u32_l cal_cfg_24g;
+	u32_l cal_cfg_5g;
+	u32_l param_alpha;
+	u32_l bt_calib_en;
+	u32_l bt_calib_param;
+    u8_l xtal_cap;
+	u8_l xtal_cap_fine;
+	u8_l reserved0[2];
+	wf_rf_calib_res_drv_t cal_res;
+
+};
+
 struct mm_set_rf_calib_cfm
 {
     u32_l rxgain_24g_addr;
     u32_l rxgain_5g_addr;
     u32_l txgain_24g_addr;
     u32_l txgain_5g_addr;
+};
+
+struct mm_set_rf_calib_cfm_v2
+{
+	u32_l rxgain_24g_addr;
+	u32_l rxgain_5g_addr;
+	u32_l txgain_24g_addr;
+	u32_l txgain_5g_addr;
+	wf_rf_calib_res_drv_t cal_res;
 };
 
 struct mm_get_mac_addr_req
@@ -1304,7 +1349,13 @@ struct mm_get_sta_info_cfm
 {
     u32_l rate_info;
     u32_l txfailed;
-	u8 rssi;
+    u8 rssi;
+    u8    reserved[3];
+    u32_l chan_time;
+    u32_l chan_busy_time;
+    u32_l ack_fail_stat;
+    u32_l ack_succ_stat;
+    u32_l chan_tx_busy_time;
 };
 
 typedef struct
@@ -1343,6 +1394,20 @@ typedef struct
 typedef struct
 {
     u8_l enable;
+    s8_l pwrlvl_11b_11ag_2g4[12];
+    s8_l pwrlvl_11n_11ac_2g4[10];
+    s8_l pwrlvl_11ax_2g4[12];
+    s8_l pwrlvl_11a_5g[8];
+    s8_l pwrlvl_11n_11ac_5g[10];
+    s8_l pwrlvl_11ax_5g[12];
+    s8_l pwrlvl_11a_6g[8];
+    s8_l pwrlvl_11n_11ac_6g[10];
+    s8_l pwrlvl_11ax_6g[12];
+} txpwr_lvl_conf_v4_t;
+
+typedef struct
+{
+    u8_l enable;
     s8_l pwrlvl_adj_tbl_2g4[3];
     s8_l pwrlvl_adj_tbl_5g[6];
 } txpwr_lvl_adj_conf_t;
@@ -1353,6 +1418,7 @@ struct mm_set_txpwr_lvl_req
     txpwr_lvl_conf_t txpwr_lvl;
     txpwr_lvl_conf_v2_t txpwr_lvl_v2;
     txpwr_lvl_conf_v3_t txpwr_lvl_v3;
+    txpwr_lvl_conf_v4_t txpwr_lvl_v4;
   };
 };
 
@@ -1363,8 +1429,10 @@ struct mm_set_txpwr_lvl_adj_req
 
 typedef struct
 {
-    u8_l loss_enable;
-    u8_l loss_value;
+	u8_l loss_enable_2g4;
+	s8_l loss_value_2g4;
+	u8_l loss_enable_5g;
+	s8_l loss_value_5g;
 } txpwr_loss_conf_t;
 
 typedef struct
@@ -1424,16 +1492,58 @@ typedef struct
 
 typedef struct
 {
-    int8_t enable;
-    int8_t pwrofst2x_tbl_2g4[3][3];
-    int8_t pwrofst2x_tbl_5g[3][6];
+    u8_l enable;
+    s8_l pwrofst2x_tbl_2g4[3][3];
+    s8_l pwrofst2x_tbl_5g[3][6];
 } txpwr_ofst2x_conf_t;
+
+/*
+ * pwrofst2x_v2_tbl_2g4_ant0/1[3][3]:
+ * +---------------+----------+---------------+--------------+
+ * | ChGrp\RateTyp |  DSSS    | OFDM_HIGHRATE | OFDM_LOWRATE |
+ * +---------------+----------+---------------+--------------+
+ * | CH_1_4        |  [0][0]  |  [0][1]       |  Reserved    |
+ * +---------------+----------+---------------+--------------+
+ * | CH_5_9        |  [1][0]  |  [1][1]       |  Reserved    |
+ * +---------------+----------+---------------+--------------+
+ * | CH_10_13      |  [2][0]  |  [2][1]       |  Reserved    |
+ * +---------------+----------+---------------+--------------+
+ * pwrofst2x_v2_tbl_5g_ant0/1[6][3]:
+ * +-----------------+---------------+--------------+--------------+
+ * | ChGrp\RateTyp   | OFDM_HIGHRATE | OFDM_LOWRATE | OFDM_MIDRATE |
+ * +-----------------+---------------+--------------+--------------+
+ * | CH_42(36~50)    |  [0][0]       |  Reserved    |  Reserved    |
+ * +-----------------+---------------+--------------+--------------+
+ * | CH_58(51~64)    |  [1][0]       |  Reserved    |  Reserved    |
+ * +-----------------+---------------+--------------+--------------+
+ * | CH_106(98~114)  |  [2][0]       |  Reserved    |  Reserved    |
+ * +-----------------+---------------+--------------+--------------+
+ * | CH_122(115~130) |  [3][0]       |  Reserved    |  Reserved    |
+ * +-----------------+---------------+--------------+--------------+
+ * | CH_138(131~146) |  [4][0]       |  Reserved    |  Reserved    |
+ * +-----------------+---------------+--------------+--------------+
+ * | CH_155(147~166) |  [5][0]       |  Reserved    |  Reserved    |
+ * +-----------------+---------------+--------------+--------------+
+ */
+
+typedef struct
+{
+    u8_l enable;
+    u8_l pwrofst_flags;
+    s8_l pwrofst2x_tbl_2g4_ant0[3][3];
+    s8_l pwrofst2x_tbl_2g4_ant1[3][3];
+    s8_l pwrofst2x_tbl_5g_ant0[6][3];
+    s8_l pwrofst2x_tbl_5g_ant1[6][3];
+    s8_l pwrofst2x_tbl_6g_ant0[15];
+    s8_l pwrofst2x_tbl_6g_ant1[15];
+} txpwr_ofst2x_conf_v2_t;
 
 struct mm_set_txpwr_ofst_req
 {
   union {
     txpwr_ofst_conf_t txpwr_ofst;
     txpwr_ofst2x_conf_t txpwr_ofst2x;
+    txpwr_ofst2x_conf_v2_t txpwr_ofst2x_v2;
   };
 };
 
@@ -1978,7 +2088,25 @@ enum vendor_hwconfig_tag{
 	AP_PS_LEVEL_SET_REQ,
 	CUSTOMIZED_FREQ_REQ,
 	WAKEUP_INFO_REQ,
+	KEEPALIVE_PKT_REQ,
 };
+
+enum vendor_hwconfig_tag_x2{
+	ACS_TXOP_REQ_X2 = 0,
+	CHANNEL_ACCESS_REQ_X2,
+	MAC_TIMESCALE_REQ_X2,
+	CCA_THRESHOLD_REQ_X2,
+	BWMODE_REQ_X2,
+	CHIP_TEMP_GET_REQ_X2,
+	STBC_MCS_SET_REQ_X2,
+	MAX_AGG_TX_CNT_REQ_X2,
+	MAX_BW_MCS_THRESH_SET_REQ_X2,
+	DCM_FORCE_EN_REQ_X2,
+	AUTO_CCA_EN_REQ_X2,
+	NSS_1T2R_REQ_X2,
+	ON_AIR_DUTY_CYCLE_REQ_X2,
+};
+
 
 enum {
     BWMODE20M = 0,
@@ -2005,7 +2133,8 @@ struct mm_set_channel_access_req
 	u8_l  long_nav_en;
 	u8_l  cfe_en;
 	u8_l  rc_retry_cnt[3];
-	s8_l ccademod_th;
+	s8_l  ccademod_th;
+	u8_l  remove_1m2m;
 };
 
 struct mm_set_mac_timescale_req
@@ -2047,6 +2176,58 @@ struct mm_get_chip_temp_cfm
     s8_l degree;
 };
 
+struct mm_get_stbc_msc_req
+{
+    u32_l hwconfig_id;
+    u8_l enable;
+    u8_l mcs_thresh;
+};
+
+struct mm_set_max_tx_agg_cnt_req
+{
+    u32_l hwconfig_id;
+    u8_l enale;
+    u8_l mcs_thresh;
+    u8_l max_agg_cnt[AC_MAX];
+};
+
+struct mm_set_max_bw_mcs_thresh_req
+{
+    u32_l hwconfig_id;
+    u8_l enale;
+    u8_l max_bw_mcs_thresh;
+};
+
+struct mm_set_dcm_force_en_req
+{
+    u32_l hwconfig_id;
+    u8_l enable;
+};
+
+
+struct mm_set_auto_cca_en_req
+{
+    u32_l hwconfig_id;
+    u8_l enable;
+    int8_t max_cca_thresh;
+    u8_l default_cca_set;
+    int8_t default_cca_thresh;
+};
+
+struct mm_set_nss_1t2r_req
+{
+    u32_l hwconfig_id;
+    u8_l enable;
+};
+
+struct mm_set_on_air_duty_cycle_req
+{
+    u32_l hwconfig_id;
+    u8_l enable;
+    u8_l percent;//10 means 10%, 1-99
+};
+
+
 struct mm_set_vendor_hwconfig_cfm
 {
     u32_l hwconfig_id;
@@ -2060,6 +2241,15 @@ struct mm_set_customized_freq_req
 	u32_l hwconfig_id;
 	u16_l raw_freq[4];
 	u16_l map_freq[4];
+};
+
+struct mm_set_keepalive_req
+{
+	u32_l hwconfig_id;
+	u16_l code;
+	u16_l length;
+	u32_l intv;
+	u8_l payload[];
 };
 
 struct mm_set_txop_req
@@ -2099,6 +2289,18 @@ enum vendor_swconfig_tag
     EXT_FLAGS_GET_REQ,
     EXT_FLAGS_MASK_SET_REQ,
 };
+
+enum vendor_swconfig_tag_x2
+{
+    BCN_CFG_REQ_X2 = 0,
+    TEMP_COMP_SET_REQ_X2,
+    TEMP_COMP_GET_REQ_X2,
+    EXT_FLAGS_SET_REQ_X2,
+    EXT_FLAGS_GET_REQ_X2,
+    EXT_FLAGS_MASK_SET_REQ_X2,
+    TWO_ANT_RSSI_GET_REQ_X2,
+};
+
 
 struct mm_set_bcn_cfg_req
 {
@@ -2182,6 +2384,12 @@ struct mm_set_vendor_swconfig_cfm
         struct mm_get_ext_flags_cfm ext_flags_get_cfm;
         struct mm_mask_set_ext_flags_cfm ext_flags_mask_set_cfm;
     };
+};
+
+struct mm_set_txpwr_lvl_per_sta_req
+{
+	u8_l sta_idx;
+	s8_l tx_pwr_offset;
 };
 
 /// Structure containing the parameters of the @ref ME_RC_STATS_REQ message.
@@ -2551,13 +2759,13 @@ struct apm_stop_req
 struct apm_start_cac_req
 {
     /// Control channel on which we have to start the CAC
-    struct mac_chan_def chan;
+    struct mac_chan_op chan;
     /// Center frequency of the first segment
-    u32_l center_freq1;
+    //u32_l center_freq1;
     /// Center frequency of the second segment (only in 80+80 configuration)
-    u32_l center_freq2;
+    //u32_l center_freq2;
     /// Width of channel
-    u8_l ch_width;
+    //u8_l ch_width;
     /// Index of the VIF for which the CAC is started
     u8_l vif_idx;
 };
@@ -3007,7 +3215,7 @@ struct dbg_rftest_cmd_req
 
 struct dbg_rftest_cmd_cfm
 {
-    u32_l rftest_result[18];
+    u32_l rftest_result[32];
 };
 
 struct dbg_gpio_write_req {
@@ -3067,6 +3275,21 @@ struct dbg_mem_block_write_req
 struct dbg_mem_block_write_cfm
 {
     u32_l wstatus;
+};
+
+/// Structure containing the parameters of the @ref DBG_MEM_BLOCK_READ_REQ message.
+struct dbg_mem_block_read_req
+{
+    u32_l memaddr;
+    u32_l memsize;
+};
+
+/// Structure containing the parameters of the @ref DBG_MEM_BLOCK_READ_CFM message.
+struct dbg_mem_block_read_cfm
+{
+    u32_l memaddr;
+    u32_l memsize;
+    u32_l memdata[1024 / sizeof(u32_l)];
 };
 
 /// Structure containing the parameters of the @ref DBG_START_APP_REQ message.
@@ -3231,6 +3454,45 @@ struct tdls_peer_traffic_ind_cfm
 {
     /// Status of the operation
     u8_l status;
+};
+
+struct mm_set_wakeup_info_req {
+	u32_l hwconfig_id;
+	u16_l code;
+	u16_l offset;
+	u16_l length;
+	u8_l mask_and_pattern[];
+    };
+
+struct dbg_pwm_init_req
+{
+    /// PWM_CHANNEL_GPIO
+    u8 pwm_gpidx;
+    /// 0 normal 1 breath
+    u8 mode;
+    /// 0 config only 1 run after config
+    u8 run;
+    u32 tmr_cnt;
+    u32 dty_cnt;
+    u32 step_val;
+    /// 0 disable 1 enable
+    u8 gpio_en;
+    /// 0 input 1 output
+    u8 gpio_dir;
+    /// 0 low 1 high
+    u8 gpio_val;
+};
+
+struct dbg_pwm_deinit_req
+{
+    /// PWM_CHANNEL_GPIO
+    u8 pwm_gpidx;
+    /// 0 disable 1 enable
+    u8 gpio_en;
+    /// 0 input 1 output
+    u8 gpio_dir;
+    /// 0 low 1 high
+    u8 gpio_val;
 };
 
 

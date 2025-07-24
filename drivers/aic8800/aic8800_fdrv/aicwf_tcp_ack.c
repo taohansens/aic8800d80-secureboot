@@ -106,11 +106,7 @@ void tcp_ack_deinit(struct rwnx_hw *priv)
 		drop_msg = NULL;
 
 		write_seqlock_bh(&ack_m->ack_info[i].seqlock);
-		#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
-			timer_delete(&ack_m->ack_info[i].timer);
-		#else
-			del_timer(&ack_m->ack_info[i].timer);
-		#endif
+		del_timer(&ack_m->ack_info[i].timer);
 		drop_msg = ack_m->ack_info[i].msgbuf;
 		ack_m->ack_info[i].msgbuf = NULL;
 		write_sequnlock_bh(&ack_m->ack_info[i].seqlock);
@@ -192,7 +188,7 @@ int is_drop_tcp_ack(struct tcphdr *tcphdr, int tcp_tot_len,
 				case TCPOPT_WINDOW:
 					if (*ptr < 15)
 						*win_scale = (1 << (*ptr));
-					printk("%d\n",*win_scale);
+					//printk("%d\n",*win_scale);
 					break;
 				default:
 					drop = 2;
@@ -379,11 +375,7 @@ int tcp_ack_handle(struct msg_buf *new_msgbuf,
 				//printk("%lx \n",ack_info->msgbuf);
 				drop_msg = ack_info->msgbuf;
 				ack_info->msgbuf = NULL;
-				#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
-					timer_delete(&ack_info->timer);
-				#else
-					del_timer(&ack_info->timer);
-				#endif
+				del_timer(&ack_info->timer);
 			}else{
 				//printk("msgbuf is NULL \n");
 			}
@@ -417,11 +409,7 @@ int tcp_ack_handle(struct msg_buf *new_msgbuf,
 				   atomic_read(&ack_m->max_drop_cnt)))) {
 			ack_info->drop_cnt = 0;
 			ack_info->in_send_msg = new_msgbuf;
-			#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
-    			timer_delete(&ack_info->timer);
-			#else
-				del_timer(&ack_info->timer);
-			#endif
+			del_timer(&ack_info->timer);
 		} else {
 			ret = 1;
 			ack_info->msgbuf = new_msgbuf;
@@ -454,7 +442,7 @@ int tcp_ack_handle_new(struct msg_buf *new_msgbuf,
 	struct tcp_ack_msg *ack;
 	int ret = 0;
 	struct msg_buf *drop_msg = NULL;
-	struct msg_buf * send_msg = NULL;
+	//struct msg_buf * send_msg = NULL;
 	//printk("",);
 	write_seqlock_bh(&ack_info->seqlock);
 
@@ -482,13 +470,9 @@ int tcp_ack_handle_new(struct msg_buf *new_msgbuf,
 				  (ack_info->drop_cnt >=
 				   atomic_read(&ack_m->max_drop_cnt)))){
 			ack_info->drop_cnt = 0;
-			send_msg = new_msgbuf;
-			ack_info->in_send_msg = send_msg;
-			#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
-    			timer_delete(&ack_info->timer);
-			#else
-				del_timer(&ack_info->timer);
-			#endif
+			//send_msg = new_msgbuf;
+			ack_info->in_send_msg = new_msgbuf;
+			del_timer(&ack_info->timer);
 		}else{
 			ret = 1;
 			ack_info->msgbuf = new_msgbuf;
@@ -565,9 +549,6 @@ int filter_send_tcp_ack(struct rwnx_hw *priv,
 	struct tcp_ack_msg *ack;
 	struct tcp_ack_info *ack_info;
 	struct tcp_ack_manage *ack_m = &priv->ack_m;
-
-	if (plen > MAX_TCP_ACK)
-		return 0;
 
 	tcp_ack_update(ack_m);
 	drop = tcp_check_ack(buf, &ack_msg, &win_scale);

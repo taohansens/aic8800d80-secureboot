@@ -6,7 +6,7 @@ obj-$(CONFIG_AIC8800_WLAN_SUPPORT) += aic8800_fdrv/
 
 ########## config option ##########
 export CONFIG_USE_FW_REQUEST = n
-export CONFIG_PREALLOC_RX_SKB = n
+export CONFIG_PREALLOC_RX_SKB = y
 export CONFIG_PREALLOC_TXQ = y
 ###################################
 
@@ -50,7 +50,7 @@ KDIR  = /lib/modules/$(shell uname -r)/build
 PWD   = $(shell pwd)
 KVER = $(shell uname -r)
 MODDESTDIR = /lib/modules/$(KVER)/kernel/drivers/net/wireless/aic8800
-SUBARCH = $(shell uname -m | sed -e s/i.86/i386/ -e s/armv.l/arm/ -e s/aarch64/arm64/)
+SUBARCH = $(shell uname -m | sed -e s/i.86/i386/ -e s/armv.l/arm/ -e s/aarch64/arm64/ -e s/loongarch64/loongarch/ -e s/loong64/loongarch/)
 ARCH ?= $(SUBARCH)
 CROSS_COMPILE ?=
 endif
