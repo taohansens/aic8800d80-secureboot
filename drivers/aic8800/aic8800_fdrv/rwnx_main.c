@@ -2677,7 +2677,11 @@ static void rwnx_cfgp2p_stop_p2p_device(struct wiphy *wiphy, struct wireless_dev
 	if (rwnx_vif == rwnx_hw->p2p_dev_vif) {
 		rwnx_hw->is_p2p_alive = 0;
 		if (timer_pending(&rwnx_hw->p2p_alive_timer)) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+            timer_delete_sync(&rwnx_hw->p2p_alive_timer);
+#else
 			del_timer_sync(&rwnx_hw->p2p_alive_timer);
+#endif
 		}
 		if (rwnx_vif->up) {
 			rwnx_send_remove_if(rwnx_hw, rwnx_vif->vif_index, true);
@@ -4084,7 +4088,11 @@ static int rwnx_cfg80211_stop_ap(struct wiphy *wiphy, struct net_device *dev)
 	rwnx_vif->ap.start = false;
 	aicwf_nl_hook_deinit(rwnx_vif->ap.band, rwnx_vif->rwnx_hw->iface_idx);
 	if (timer_pending(&rwnx_vif->steer_timer))
-		del_timer_sync(&rwnx_vif->steer_timer);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+        timer_delete_sync(&rwnx_vif->steer_timer);
+#else
+        del_timer_sync(&rwnx_vif->steer_timer);
+#endif
 	cancel_work_sync(&rwnx_vif->steer_work);
 	flush_workqueue(rwnx_vif->rsp_wq);
 	destroy_workqueue(rwnx_vif->rsp_wq);
@@ -9017,7 +9025,11 @@ void rwnx_cfg80211_deinit(struct rwnx_hw *rwnx_hw)
 
 #ifdef CONFIG_DYNAMIC_PWR
 	if(timer_pending(&rwnx_hw->pwrloss_timer)){
-		del_timer_sync(&rwnx_hw->pwrloss_timer);}
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+        timer_delete_sync(&rwnx_hw->pwrloss_timer);
+#else
+		del_timer_sync(&rwnx_hw->pwrloss_timer);
+#endif
 	cancel_work_sync(&rwnx_hw->pwrloss_work);
 #endif
 
@@ -9031,7 +9043,11 @@ void rwnx_cfg80211_deinit(struct rwnx_hw *rwnx_hw)
         list_for_each_entry(defrag_ctrl, &rwnx_hw->defrag_list, list) {
             list_del_init(&defrag_ctrl->list);
             if (timer_pending(&defrag_ctrl->defrag_timer))
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+                timer_delete_sync(&defrag_ctrl->defrag_timer);
+#else
                 del_timer_sync(&defrag_ctrl->defrag_timer);
+#endif
             dev_kfree_skb(defrag_ctrl->skb);
             kfree(defrag_ctrl);
         }
