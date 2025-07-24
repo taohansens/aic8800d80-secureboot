@@ -1868,6 +1868,8 @@ void reord_timeout_handler (struct timer_list *t)
 {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 	struct reord_ctrl *preorder_ctrl = (struct reord_ctrl *)data;
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
+	struct reord_ctrl *preorder_ctrl = timer_container_of(preorder_ctrl, t, reord_timer);
 #else
 	struct reord_ctrl *preorder_ctrl = from_timer(preorder_ctrl, t, reord_timer);
 #endif
@@ -2197,6 +2199,8 @@ void defrag_timeout_cb(struct timer_list *t)
 	struct defrag_ctrl_info *defrag_ctrl = NULL;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
 	defrag_ctrl = (struct defrag_ctrl_info *)data;
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
+    defrag_ctrl = timer_container_of(defrag_ctrl, t, defrag_timer);
 #else
 	defrag_ctrl = from_timer(defrag_ctrl, t, defrag_timer);
 #endif

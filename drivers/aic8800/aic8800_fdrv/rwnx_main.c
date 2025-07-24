@@ -2036,6 +2036,9 @@ void aicwf_p2p_alive_timeout(struct timer_list *t)
     #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
     rwnx_vif = (struct rwnx_vif *)data;
     rwnx_hw = rwnx_vif->rwnx_hw;
+    #elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
+    rwnx_hw = timer_container_of(rwnx_hw, t, p2p_alive_timer);
+    rwnx_vif = rwnx_hw->p2p_dev_vif;
     #else
     rwnx_hw = from_timer(rwnx_hw, t, p2p_alive_timer);
     rwnx_vif = rwnx_hw->p2p_dev_vif;
@@ -2230,6 +2233,8 @@ static void aicwf_pwrloss_timer(struct timer_list *t)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
 	rwnx_vif = (struct rwnx_vif *)data;
 	rwnx_hw = rwnx_vif->rwnx_hw;
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
+    rwnx_hw = timer_container_of(rwnx_hw, t, pwrloss_timer);
 #else
 	rwnx_hw = from_timer(rwnx_hw, t, pwrloss_timer);
 #endif
