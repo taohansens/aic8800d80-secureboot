@@ -1,10 +1,14 @@
-## Driver AIC8800D80 no Debian (Secure Boot)
+## Driver AIC8800D80 no Debian 13 (com Secure Boot)
 
 Suporte para dongles USB 3.0 com chipset AIC8800D80 (ex.: `a69c:5721` → modeswitch → `a69c:8d80`).
 
 - **Distribuição**: Debian 12/13
 - **Kernel testado**: `6.12.48+deb13-amd64`
 - **Estado do Bluetooth**: atualmente não suportado neste driver (Wi‑Fi apenas)
+
+Adaptador utilizado<br />
+ADAPTADOR USB ANTENA WIFI WIRELESS 2.4GHZ + 5GHZ 600MBPS 802.11AX ATOMO MO-LYW01
+<img src="./.github/826177.jpg" alt="Adaptador USB Wi‑Fi 6 Atomo MO-LYW01" width="220" />
 
 ### Requisitos
 
@@ -73,11 +77,6 @@ sudo reboot
 sudo modprobe aic8800_fdrv
 lsmod | grep aic
 dmesg | tail -n 200 | grep -i aic
-```
-3) Conecte via NetworkManager
-```bash
-nmcli dev wifi list
-nmcli dev wifi connect "SSID" password "SENHA"
 ```
 
 ### Solução de Problemas
